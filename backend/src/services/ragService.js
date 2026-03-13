@@ -1,20 +1,20 @@
 /**
  * @module services/ragService
  * @description RAG (Retrieval-Augmented Generation) chat service powered by
- * Anthropic Claude. Retrieves relevant docs via pgvector, builds a grounded
+ * Google Gemini. Retrieves relevant docs, builds a grounded
  * system prompt with user context, and maintains conversational memory.
  */
 
-const Anthropic = require('@anthropic-ai/sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('../config/database');
 const embeddingService = require('./embeddingService');
 
-let _anthropic = null;
-function getAnthropic() {
-  if (!_anthropic) {
-    _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'sk-ant-placeholder' });
+let _genAI = null;
+function getGemini() {
+  if (!_genAI) {
+    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'sk-placeholder');
   }
-  return _anthropic;
+  return _genAI;
 }
 
 /**
@@ -26,7 +26,11 @@ function getAnthropic() {
 function buildSystemPrompt(userContext, retrievedDocs) {
   const docsText = retrievedDocs.length > 0
     ? retrievedDocs
-        .map((doc, i) => `--- Document ${i + 1}: ${doc.title} (${doc.category}) ---\n${doc.content}`)
+        .map((doc, i) => {
+          // Replace escaped newlines with actual newlines
+          const unescapedContent = doc.content.replace(/\\n/g, '\n');
+          return `--- Document ${i + 1}: ${doc.title} (${doc.category}) ---\n${unescapedContent}`;
+        })
         .join('\n\n')
     : 'No relevant documentation found for this query.';
 
@@ -148,24 +152,27 @@ async function chat(userId, message) {
     // 4. Get recent chat history
     const chatHistory = await getChatHistory(userId, 10);
 
-    // Build messages array for Claude
-    const messages = [
-      ...chatHistory.map((msg) => ({
-        role: msg.role === 'assistant' ? 'assistant' : 'user',
-        content: msg.content,
-      })),
-      { role: 'user', content: message },
-    ];
+    // Build messages array for Gemini
+    const messages = chatHistory.map((msg) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
 
-    // 5. Call Claude API
-    const response = await getAnthropic().messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2048,
-      system: systemPrompt,
-      messages,
+    // 5. Call Gemini API
+    const model = getGemini().getGenerativeModel({ model: 'gemini-1.5-pro' });
+    
+    const chat = model.startChat({
+      history: messages,
+      generationConfig: {
+        maxOutputTokens: 2048,
+      },
+      systemInstruction: {
+        parts: [{ text: systemPrompt }],
+      },
     });
 
-    const reply = response.content[0].text;
+    const result = await chat.sendMessage(message);
+    const reply = result.response.text();
 
     // Determine confidence based on document relevance
     const maxSimilarity = retrievedDocs.length > 0

@@ -5,7 +5,7 @@
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "vector";
+-- CREATE EXTENSION IF NOT EXISTS "vector";  -- Commented out for now, will add pgvector later
 
 -- ============================================
 -- ENUM TYPES
@@ -106,7 +106,7 @@ CREATE TABLE documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    embedding VECTOR(1536),
+    embedding TEXT,  -- Storing as TEXT for now (will use pgvector VECTOR(1536) when extension is available)
     tags TEXT[] DEFAULT '{}',
     category TEXT,
     created_at TIMESTAMP DEFAULT NOW()

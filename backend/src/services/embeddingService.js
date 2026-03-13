@@ -1,32 +1,30 @@
 /**
  * @module services/embeddingService
- * @description Generates text embeddings via OpenAI text-embedding-ada-002
- * and performs pgvector cosine similarity searches against the documents table.
+ * @description Generates text embeddings via Google Gemini
+ * and performs simple text-based searches against the documents table.
  */
 
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('../config/database');
 
-let _openai = null;
-function getOpenAI() {
-  if (!_openai) {
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'sk-placeholder' });
+let _genAI = null;
+function getGemini() {
+  if (!_genAI) {
+    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'sk-placeholder');
   }
-  return _openai;
+  return _genAI;
 }
 
 /**
  * Generate an embedding vector for the given text.
  * @param {string} text - Input text to embed
- * @returns {Promise<number[]>} 1536-dimensional embedding vector
+ * @returns {Promise<number[]>} Embedding vector
  */
 async function generateEmbedding(text) {
   try {
-    const response = await getOpenAI().embeddings.create({
-      model: 'text-embedding-ada-002',
-      input: text.slice(0, 8000), // Truncate to stay within token limits
-    });
-    return response.data[0].embedding;
+    const model = getGemini().getGenerativeModel({ model: 'embedding-001' });
+    const result = await model.embedContent(text.slice(0, 8000)); // Truncate to stay within limits
+    return result.embedding.values;
   } catch (err) {
     console.error('[EmbeddingService] Error generating embedding:', err.message);
     throw new Error('Failed to generate embedding.');
@@ -35,31 +33,18 @@ async function generateEmbedding(text) {
 
 /**
  * Search the documents table for the most similar documents to the query.
- * Uses pgvector cosine distance operator (<=>).
+ * Uses simple keyword matching as fallback when vector DB is not available.
  * @param {string} queryText - The search query
  * @param {number} [limit=5] - Maximum number of results
  * @returns {Promise<Array<{id: string, title: string, content: string, category: string, similarity: number}>>}
  */
 async function searchDocuments(queryText, limit = 5) {
   try {
-    const embedding = await generateEmbedding(queryText);
-    const embeddingStr = `[${embedding.join(',')}]`;
-
-    const result = await db.query(
-      `SELECT id, title, content, category, tags,
-              1 - (embedding <=> $1::vector) AS similarity
-       FROM documents
-       WHERE embedding IS NOT NULL
-       ORDER BY embedding <=> $1::vector
-       LIMIT $2`,
-      [embeddingStr, limit]
-    );
-
-    return result.rows;
+    // Fallback: do a text-based search if vector search is unavailable
+    return fallbackTextSearch(queryText, limit);
   } catch (err) {
     console.error('[EmbeddingService] Error searching documents:', err.message);
-    // Fallback: do a text-based search if vector search fails
-    return fallbackTextSearch(queryText, limit);
+    return [];
   }
 }
 
