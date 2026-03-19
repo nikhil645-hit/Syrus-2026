@@ -1,18 +1,184 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-bg-primary: #0a0e1a;
-  --color-bg-secondary: #0d1321;
-  --color-bg-card: #131b2e;
-  --color-bg-elevated: #1a2540;
-  --color-border: #243152;
-  --color-cyan: #00D4FF;
-  --color-text: #e2e8f0;
-  --color-text-muted: #94a3b8;
+  /* Updated color scheme matching tailwind config */
+  --color-bg-primary: #09090b;
+  --color-bg-secondary: #121212;
+  --color-bg-card: #18181b;
+  --color-bg-elevated: #27272a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-indigo: #818cf8;
+  --color-text: #f4f4f5;
+  --color-text-muted: #a1a1aa;
+}
+
+/* Light mode overrides */
+html.light {
+  --color-bg-primary: #f5f5f7;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #f0f0f2;
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-hover: rgba(0, 0, 0, 0.18);
+  --color-indigo: #4f46e5;
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b6b6b;
+}
+
+html.light body {
+  background-color: var(--color-bg-primary) !important;
+  color: var(--color-text);
+}
+
+/* ── Layout structure ── */
+html.light aside {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light header {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(12px);
+}
+
+html.light main {
+  background-color: #f5f5f7 !important;
+}
+
+/* ── Catch-all for dark wrapper divs ── */
+html.light .bg-navy-950 {
+  background-color: #f5f5f7 !important;
+}
+
+html.light .bg-navy-900 {
+  background-color: #ececee !important;
+}
+
+html.light .bg-navy-800 {
+  background-color: #e4e4e7 !important;
+}
+
+/* ── Cards & panels ── */
+html.light .card,
+html.light .panel {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .card-elevated {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Text colors ── */
+html.light .text-white,
+html.light [class*="text-slate-"],
+html.light [class*="text-zinc-"] {
+  color: #111827 !important; /* Zinc 900 for high contrast */
+}
+
+/* Specific muted text overrides */
+html.light .text-zinc-400,
+html.light .text-zinc-500,
+html.light .text-slate-400,
+html.light .text-slate-500,
+html.light [class*="text-zinc-400"],
+html.light [class*="text-zinc-500"],
+html.light [class*="text-slate-400"],
+html.light [class*="text-slate-500"] {
+  color: #4b5563 !important; /* Zinc 600 for muted but readable text */
+}
+
+html.light .text-zinc-600,
+html.light [class*="text-zinc-600"] {
+  color: #6b7280 !important;
+}
+
+/* ── Formatted Message / Prose Overrides ── */
+html.light .prose-dark,
+html.light .prose-dark * {
+  color: #111827 !important;
+}
+
+html.light .prose-dark code {
+  background-color: #f3f4f6 !important;
+  color: #4f46e5 !important;
+  border-color: #e5e7eb !important;
+}
+
+html.light .prose-dark pre {
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+html.light .prose-dark pre code {
+  color: #1f2937 !important;
+}
+
+html.light .prose-dark strong {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+/* ── Borders ── */
+html.light .border-navy-600,
+html.light .border-navy-700,
+html.light [class*="border-white/"],
+html.light [class*="border-navy-"] {
+  border-color: #e5e7eb !important;
+}
+
+/* ── Catch ALL dark backgrounds ── */
+html.light [class*="bg-navy-"],
+html.light [class*="bg-black/"],
+html.light [class*="bg-zinc-800"],
+html.light [class*="bg-zinc-900"],
+html.light .bg-navy-900,
+html.light .bg-navy-800 {
+  background-color: #ffffff !important;
+}
+
+/* Subtler backgrounds for headers/filters */
+html.light .bg-navy-800\/50,
+html.light [class*="bg-navy-800/50"],
+html.light [class*="bg-white/5"],
+html.light [class*="bg-white/10"] {
+  background-color: #f3f4f6 !important;
+}
+
+/* User Message Bubble unique case */
+html.light [class*="bg-zinc-800/80"] {
+  background-color: #e5e7eb !important;
+}
+
+/* ── User Avatar Light Mode Polish ── */
+html.light .user-avatar {
+  background-color: #f3f4f6 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .user-avatar span {
+  color: #374151 !important;
+}
+
+/* ── Catch missed hardcoded hexes ── */
+html.light [class*="bg-[#0a0a0c]"],
+html.light [class*="bg-[#0c0c0e]"],
+html.light [class*="bg-[#121212]"] {
+  background-color: #ffffff !important;
+}
+
+
+/* ── Smooth transitions ── */
+body, aside, header, main, .card, .panel, .card-elevated, input, textarea {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 * {
@@ -34,80 +200,111 @@ body {
   min-height: 100vh;
 }
 
-/* ── Scrollbar Styling ── */
+/* ── Scrollbar Styling (Ultra Minimal) ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #344563;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ── Custom Component Styles ── */
 @layer components {
-  .card {
-    @apply bg-navy-800 border border-navy-600 rounded-lg;
+  /* Core layout panels / major cards */
+  .panel {
+    @apply bg-[#121212] border border-white/5 rounded-xl;
   }
 
+  /* Standard cards inside panels */
+  .card {
+    @apply bg-zinc-900/40 border border-white/5 rounded-xl transition-colors duration-200 hover:border-white/10;
+  }
+
+  /* Elevated floating cards / popovers */
   .card-elevated {
-    @apply bg-navy-700 border border-navy-600 rounded-lg shadow-lg;
+    @apply bg-[#121212] border border-white/10 rounded-xl shadow-lg;
+  }
+
+  /* Ghost/minimal buttons */
+  .btn-ghost {
+    @apply px-3 py-1.5 text-[13px] font-medium text-zinc-400 rounded-lg
+           hover:text-zinc-100 hover:bg-white/5 transition-all duration-150;
   }
 
   .btn-primary {
-    @apply px-4 py-2 bg-cyan-400 text-navy-950 font-semibold rounded
-           hover:bg-cyan-500 active:scale-[0.98] transition-all duration-150
+    @apply px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg text-sm
+           hover:bg-indigo-500 active:scale-[0.98] transition-all duration-150 shadow-sm
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 border border-navy-600 text-slate-300 rounded
-           hover:bg-navy-700 hover:border-cyan-400/30 transition-all duration-150;
+    @apply px-4 py-2 border border-white/10 bg-white/5 text-zinc-300 font-medium rounded-lg text-sm
+           hover:bg-white/10 hover:border-white/20 hover:text-white transition-all duration-150 shadow-sm;
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded
-           hover:bg-red-500/30 transition-all duration-150;
+    @apply px-4 py-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium rounded-lg text-sm
+           hover:bg-rose-500/20 hover:border-rose-500/30 transition-all duration-150;
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 bg-navy-900 border border-navy-600 rounded
-           text-slate-200 placeholder-slate-500
-           focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20
-           transition-all duration-150;
+    @apply w-full px-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-sm
+           text-zinc-200 placeholder-zinc-500 shadow-inner
+           focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30
+           transition-all duration-200;
   }
 
+  /* Slim, pill-shaped badges */
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium tracking-wide uppercase;
   }
 
   .badge-success {
-    @apply badge bg-green-500/20 text-green-400;
+    @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
   }
 
   .badge-warning {
-    @apply badge bg-yellow-500/20 text-yellow-400;
+    @apply badge bg-amber-500/10 text-amber-400 border border-amber-500/20;
   }
 
   .badge-danger {
-    @apply badge bg-red-500/20 text-red-400;
+    @apply badge bg-rose-500/10 text-rose-400 border border-rose-500/20;
   }
 
   .badge-info {
-    @apply badge bg-cyan-400/20 text-cyan-400;
+    @apply badge bg-indigo-500/10 text-indigo-400 border border-indigo-500/20;
   }
 
   .badge-neutral {
-    @apply badge bg-slate-500/20 text-slate-400;
+    @apply badge bg-zinc-500/10 text-zinc-400 border border-white/10;
+  }
+
+  /* Text hierarchy utilities */
+  .text-h1 {
+    @apply text-xl font-semibold tracking-tight text-white;
+  }
+  
+  .text-h2 {
+    @apply text-lg font-medium tracking-tight text-zinc-100;
+  }
+  
+  .text-h3 {
+    @apply text-sm font-medium tracking-tight text-zinc-300;
+  }
+
+  .text-sub {
+    @apply text-xs text-zinc-500;
   }
 }
 
@@ -117,7 +314,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--color-cyan);
+  background-color: var(--color-indigo);
   animation: typing 1.2s infinite;
 }
 
@@ -129,6 +326,11 @@ body {
   animation-delay: 0.4s;
 }
 
+@keyframes typing {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
 /* ── Progress Ring ── */
 .progress-ring-circle {
   transition: stroke-dashoffset 0.8s ease-out;
@@ -136,34 +338,25 @@ body {
   transform-origin: 50% 50%;
 }
 
-/* ── Risk Meter Glow ── */
-.risk-glow-high {
-  animation: riskPulse 2s ease-in-out infinite;
-}
-
-@keyframes riskPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
-}
-
 /* ── Markdown Rendering ── */
 .prose-dark {
-  color: var(--color-text);
+  color: var(--color-text-muted);
 }
 
 .prose-dark code {
-  background: var(--color-bg-elevated);
+  background: rgba(255, 255, 255, 0.05);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.875em;
-  color: var(--color-cyan);
+  color: var(--color-indigo);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .prose-dark pre {
-  background: var(--color-bg-primary);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 16px;
   overflow-x: auto;
   margin: 12px 0;
@@ -172,14 +365,17 @@ body {
 .prose-dark pre code {
   background: transparent;
   padding: 0;
+  border: none;
   color: var(--color-text);
 }
 
 .prose-dark h1, .prose-dark h2, .prose-dark h3 {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: white;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 .prose-dark ul, .prose-dark ol {
@@ -188,14 +384,21 @@ body {
 }
 
 .prose-dark li {
-  margin: 0.25em 0;
+  margin: 0.35em 0;
 }
 
 .prose-dark a {
-  color: var(--color-cyan);
-  text-decoration: underline;
+  color: var(--color-indigo);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+  transition: border-color 0.2s;
+}
+
+.prose-dark a:hover {
+  border-color: rgba(129, 140, 248, 1);
 }
 
 .prose-dark strong {
   color: white;
+  font-weight: 600;
 }

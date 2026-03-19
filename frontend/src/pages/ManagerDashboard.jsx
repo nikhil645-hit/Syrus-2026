@@ -11,6 +11,7 @@ export default function ManagerDashboard() {
   const [selectedDev, setSelectedDev] = useState(null);
   const [report, setReport] = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     analyticsAPI.getAllDevelopers().then((res) => {
@@ -59,7 +60,21 @@ export default function ManagerDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto p-6">
-        <h2 className="text-xl font-heading font-bold text-white mb-6">Developer Onboarding Overview</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-heading font-bold text-white">Developer Onboarding Overview</h2>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search developers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64 pl-9 pr-3 py-2 bg-navy-900/50 border border-white/5 rounded-lg text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+            />
+          </div>
+        </div>
 
         {loading ? (
           <div className="text-center py-12 text-slate-500">Loading developer data...</div>
@@ -77,7 +92,13 @@ export default function ManagerDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-navy-700">
-                {developers.map((dev) => (
+                {developers
+                  .filter(dev => {
+                    if (!searchQuery.trim()) return true;
+                    const q = searchQuery.toLowerCase();
+                    return dev.name.toLowerCase().includes(q) || dev.email.toLowerCase().includes(q) || (dev.personaName || '').toLowerCase().includes(q);
+                  })
+                  .map((dev) => (
                   <tr key={dev.id}
                     className={`hover:bg-navy-800/50 transition-colors ${dev.risk.flagged ? 'bg-red-500/5' : ''}`}>
                     <td className="px-4 py-3">

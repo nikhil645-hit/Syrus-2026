@@ -3,43 +3,15 @@
  * @description Handles starter ticket retrieval and status updates.
  */
 
-const db = require('../config/database');
+const localStore = require('../data/localStore');
 
-/**
- * GET /api/tickets/starter
- * Return starter tickets assigned to the current user or matching their persona.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
 async function getStarterTickets(req, res) {
   try {
-    const result = await db.query(
-      `SELECT t.id, t.title, t.description, t.repository,
-              t.acceptance_criteria, t.difficulty, t.status, t.created_at,
-              p.name AS persona_name
-       FROM tickets t
-       LEFT JOIN personas p ON t.persona_id = p.id
-       WHERE t.assigned_to = $1 OR (t.assigned_to IS NULL AND t.persona_id = $2)
-       ORDER BY t.created_at ASC`,
-      [req.user.id, req.user.persona_id]
-    );
+    const tickets = localStore.listTicketsForUser(req.user);
 
     res.json({
       success: true,
-      data: {
-        tickets: result.rows.map((t) => ({
-          id: t.id,
-          title: t.title,
-          description: t.description,
-          repository: t.repository,
-          acceptanceCriteria: t.acceptance_criteria,
-          difficulty: t.difficulty,
-          status: t.status,
-          personaName: t.persona_name,
-          createdAt: t.created_at,
-        })),
-      },
+      data: { tickets },
       error: null,
     });
   } catch (err) {
@@ -52,13 +24,6 @@ async function getStarterTickets(req, res) {
   }
 }
 
-/**
- * PUT /api/tickets/starter/:id
- * Update the status of a starter ticket.
- *
- * @param {import('express').Request} req - Body: { status: 'assigned'|'in_progress'|'completed' }
- * @param {import('express').Response} res
- */
 async function updateTicketStatus(req, res) {
   try {
     const { status } = req.body;
@@ -72,31 +37,24 @@ async function updateTicketStatus(req, res) {
       });
     }
 
-    const result = await db.query(
-      `UPDATE tickets SET status = $1
-       WHERE id = $2 AND assigned_to = $3
-       RETURNING id, title, status`,
-      [status, req.params.id, req.user.id]
-    );
+    const updated = localStore.updateTicketStatus(req.user.id, req.params.id, status);
 
-    if (result.rows.length === 0) {
+    if (!updated) {
       return res.status(404).json({
         success: false,
         data: null,
-        error: 'Ticket not found or not assigned to you.',
+        error: 'Ticket not found or not available for this user.',
       });
     }
 
-    // Log event
-    await db.query(
-      `INSERT INTO progress_logs (user_id, event_type, metadata)
-       VALUES ($1, 'ticket_status_changed', $2)`,
-      [req.user.id, JSON.stringify({ ticket_id: req.params.id, new_status: status })]
-    );
+    localStore.logProgress(req.user.id, 'ticket_status_changed', {
+      ticket_id: req.params.id,
+      new_status: status,
+    });
 
     res.json({
       success: true,
-      data: result.rows[0],
+      data: updated,
       error: null,
     });
   } catch (err) {

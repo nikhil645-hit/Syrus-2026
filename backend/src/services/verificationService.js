@@ -307,8 +307,8 @@ function verifyTestsPassing(evidence) {
   const hasFailures =
     evidence.includes('failed') ||
     evidence.includes('failure') ||
-    evidence.includes('error') ||
-    evidence.includes('failing');
+    /\b\d+\s+failing\b/.test(evidence) ||
+    /tests?:\s*\d+\s+failed/.test(evidence);
 
   const hasPassed =
     evidence.includes('passed') ||
@@ -348,9 +348,10 @@ function verifyTestsPassing(evidence) {
 function verifyTextConfirmation(evidence) {
   const confirmations = ['done', 'completed', 'yes', 'confirmed', 'finished', 'complete'];
 
-  const isConfirmed = confirmations.some((c) => evidence.includes(c));
+  const hasKeyword = confirmations.some((c) => evidence.includes(c));
+  const hasMinLength = evidence.trim().length >= 20;
 
-  if (isConfirmed) {
+  if (hasKeyword && hasMinLength) {
     return {
       success: true,
       message: '✅ Task confirmed as completed. Moving on!',
@@ -358,9 +359,17 @@ function verifyTextConfirmation(evidence) {
     };
   }
 
+  if (hasKeyword && !hasMinLength) {
+    return {
+      success: false,
+      message: 'Please provide a brief description of what you did (at least 20 characters), e.g. "Completed — I read through the onboarding docs."',
+      details: 'Confirmation keyword found but description is too short.',
+    };
+  }
+
   return {
     success: false,
-    message: 'Please confirm completion by typing "done" or "completed".',
+    message: 'Please confirm completion by writing what you did, e.g. "Done — I finished setting up the repository."',
     details: 'No confirmation keywords found in evidence.',
   };
 }

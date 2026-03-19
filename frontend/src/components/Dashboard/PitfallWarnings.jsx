@@ -1,4 +1,6 @@
-export default function PitfallWarnings({ tasks }) {
+import { memo } from 'react';
+
+const PitfallWarnings = memo(function PitfallWarnings({ tasks }) {
   // Get active pitfalls from in-progress tasks
   const activePitfalls = tasks
     .filter((t) => t.status === 'in_progress' && t.pitfalls?.length > 0)
@@ -19,4 +21,6 @@ export default function PitfallWarnings({ tasks }) {
       ))}
     </div>
   );
-}
+});
+
+export default PitfallWarnings;

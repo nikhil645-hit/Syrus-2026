@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
-    "db:init": "psql -f schema.sql && psql -f seed.sql"
+    "dev": "node server.js",
+    "db:init": "psql -f schema.sql && psql -f seed.sql",
+    "seed:generate": "node scripts/generatePs03Seed.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -14,9 +15,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.3.1",
     "jsonwebtoken": "^9.0.2",
-    "openai": "^4.77.0",
-    "pg": "^8.13.1",
     "uuid": "^11.0.3"
   },
   "engines": {

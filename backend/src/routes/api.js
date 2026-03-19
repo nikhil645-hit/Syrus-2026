@@ -19,6 +19,17 @@ const pitfallController = require('../controllers/pitfallController');
 const ticketController = require('../controllers/ticketController');
 const analyticsController = require('../controllers/analyticsController');
 
+// UUID validation middleware (S6)
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function validateUuid(param) {
+  return (req, res, next) => {
+    if (!UUID_RE.test(req.params[param])) {
+      return res.status(400).json({ success: false, data: null, error: `Invalid ${param} format.` });
+    }
+    next();
+  };
+}
+
 // ══════════════════════════════════════════
 // AUTH (public — no token required)
 // ══════════════════════════════════════════
@@ -35,10 +46,10 @@ router.put('/user/persona', verifyToken, userController.updatePersona);
 
 // TASKS
 router.get('/tasks', verifyToken, taskController.listTasks);
-router.get('/tasks/:id', verifyToken, taskController.getTask);
-router.post('/tasks/:id/start', verifyToken, taskController.startTask);
-router.post('/tasks/:id/verify', verifyToken, taskController.verifyTask);
-router.post('/tasks/:id/complete', verifyToken, taskController.completeTask);
+router.get('/tasks/:id', verifyToken, validateUuid('id'), taskController.getTask);
+router.post('/tasks/:id/start', verifyToken, validateUuid('id'), taskController.startTask);
+router.post('/tasks/:id/verify', verifyToken, validateUuid('id'), taskController.verifyTask);
+router.post('/tasks/:id/complete', verifyToken, validateUuid('id'), taskController.completeTask);
 
 // CHAT
 router.post('/chat', verifyToken, chatController.sendMessage);
@@ -52,7 +63,7 @@ router.get('/pitfalls', verifyToken, pitfallController.getPitfalls);
 
 // TICKETS
 router.get('/tickets/starter', verifyToken, ticketController.getStarterTickets);
-router.put('/tickets/starter/:id', verifyToken, ticketController.updateTicketStatus);
+router.put('/tickets/starter/:id', verifyToken, validateUuid('id'), ticketController.updateTicketStatus);
 
 // ANALYTICS
 router.get('/analytics/progress', verifyToken, analyticsController.getProgress);
@@ -61,6 +72,6 @@ router.get('/analytics/productivity-estimate', verifyToken, analyticsController.
 
 // MANAGER ONLY
 router.get('/analytics/all-developers', verifyToken, requireManager, analyticsController.getAllDevelopers);
-router.get('/reports/onboarding/:userId', verifyToken, requireManager, analyticsController.getOnboardingReport);
+router.get('/reports/onboarding/:userId', verifyToken, requireManager, validateUuid('userId'), analyticsController.getOnboardingReport);
 
 module.exports = router;

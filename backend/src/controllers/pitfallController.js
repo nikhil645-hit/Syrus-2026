@@ -3,15 +3,8 @@
  * @description Retrieves pitfalls associated with a specific task.
  */
 
-const db = require('../config/database');
+const localStore = require('../data/localStore');
 
-/**
- * GET /api/pitfalls?taskId=
- * Return all pitfalls for the given task ID.
- *
- * @param {import('express').Request} req - Query: { taskId: UUID }
- * @param {import('express').Response} res
- */
 async function getPitfalls(req, res) {
   try {
     const { taskId } = req.query;
@@ -24,26 +17,20 @@ async function getPitfalls(req, res) {
       });
     }
 
-    const result = await db.query(
-      `SELECT p.id, p.title, p.description, p.warning_message, p.condition,
-              t.title AS task_title
-       FROM pitfalls p
-       JOIN tasks t ON p.task_id = t.id
-       WHERE p.task_id = $1`,
-      [taskId]
-    );
+    const pitfalls = localStore.listPitfallsByTask(taskId);
+    const task = localStore.getTaskById(taskId);
 
     res.json({
       success: true,
       data: {
         taskId,
-        pitfalls: result.rows.map((p) => ({
-          id: p.id,
-          title: p.title,
-          description: p.description,
-          warningMessage: p.warning_message,
-          condition: p.condition,
-          taskTitle: p.task_title,
+        pitfalls: pitfalls.map((pitfall) => ({
+          id: pitfall.id,
+          title: pitfall.title,
+          description: pitfall.description,
+          warningMessage: pitfall.warningMessage,
+          condition: pitfall.condition,
+          taskTitle: task?.title || null,
         })),
       },
       error: null,

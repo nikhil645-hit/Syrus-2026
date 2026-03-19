@@ -1,18 +1,11 @@
 /**
  * @module controllers/chatController
- * @description Handles the AI chat endpoint (RAG-powered) and chat history retrieval.
+ * @description Handles the onboarding chat endpoint and chat history retrieval.
  */
 
 const ragService = require('../services/ragService');
-const db = require('../config/database');
+const localStore = require('../data/localStore');
 
-/**
- * POST /api/chat
- * Send a message to the Axiom AI assistant. Uses RAG pipeline.
- *
- * @param {import('express').Request} req - Body: { message: string }
- * @param {import('express').Response} res
- */
 async function sendMessage(req, res) {
   try {
     const { message } = req.body;
@@ -22,6 +15,14 @@ async function sendMessage(req, res) {
         success: false,
         data: null,
         error: 'Message is required.',
+      });
+    }
+
+    if (message.length > 2000) {
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: 'Message too long. Maximum 2000 characters.',
       });
     }
 
@@ -46,35 +47,19 @@ async function sendMessage(req, res) {
   }
 }
 
-/**
- * GET /api/chat/history
- * Return the last 20 messages for the current user.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
 async function getHistory(req, res) {
   try {
-    const result = await db.query(
-      `SELECT id, role, content, sources, created_at
-       FROM chat_history
-       WHERE user_id = $1
-       ORDER BY created_at ASC
-       LIMIT 50`,
-      [req.user.id]
-    );
+    const messages = localStore.getChatHistory(req.user.id, 50).map((message) => ({
+      id: message.id,
+      role: message.role,
+      content: message.content,
+      sources: message.sources || [],
+      createdAt: message.createdAt,
+    }));
 
     res.json({
       success: true,
-      data: {
-        messages: result.rows.map((row) => ({
-          id: row.id,
-          role: row.role,
-          content: row.content,
-          sources: row.sources || [],
-          createdAt: row.created_at,
-        })),
-      },
+      data: { messages },
       error: null,
     });
   } catch (err) {

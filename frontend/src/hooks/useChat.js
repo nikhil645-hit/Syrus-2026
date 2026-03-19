@@ -22,7 +22,7 @@ export function useChat() {
     setError(null);
 
     // Optimistically add user message
-    const userMsg = { id: Date.now(), role: 'user', content: message, createdAt: new Date().toISOString() };
+    const userMsg = { id: crypto.randomUUID(), role: 'user', content: message, createdAt: new Date().toISOString() };
     setMessages((prev) => [...prev, userMsg]);
 
     try {
@@ -30,7 +30,7 @@ export function useChat() {
       if (res.data.success) {
         const { reply, sources, confidence } = res.data.data;
         const assistantMsg = {
-          id: Date.now() + 1,
+          id: crypto.randomUUID(),
           role: 'assistant',
           content: reply,
           sources,
